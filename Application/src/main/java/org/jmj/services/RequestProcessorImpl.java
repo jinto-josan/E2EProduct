@@ -13,6 +13,7 @@ import org.jmj.repository.SubsystemRepository;
 import org.jmj.services.caching.PathCache;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.RequestPath;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.scheduling.annotation.Async;
@@ -43,7 +44,7 @@ public class RequestProcessorImpl implements RequestProcessor {
     //Todo: Genearte Rest response based for subsystem based on open api json
 
     @Override
-    public String processRequest(ServerHttpRequest req, HttpHeaders headers, SubSystem subSystem) {
+    public ResponseEntity<String> processRequest(ServerHttpRequest req, HttpHeaders headers, SubSystem subSystem) {
         //Path has the subsystem in it, so its removed
         String path = java.net.URLDecoder.decode(String.valueOf(req.getPath().subPath(2)), StandardCharsets.UTF_8);
 
@@ -55,6 +56,9 @@ public class RequestProcessorImpl implements RequestProcessor {
                 getRequestId(subSystem.getName(), req.getMethod().name(), actRqstPthAndCtxt.path()),
                 actRqstPthAndCtxt.status()
         );
+        if (responses.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No response configuration found for the request");
+        }
 
         processAsyncResponses(responses, actRqstPthAndCtxt.context());
 
@@ -65,16 +69,17 @@ public class RequestProcessorImpl implements RequestProcessor {
                     log.info("Response found: {}", response.getBody());
                     return resolveResponseBody(response, actRqstPthAndCtxt.context());
                 })
-                .orElseGet(() -> "Response not found");
+                //If no rest response it means some async request was present
+                .orElseGet(() -> ResponseEntity.accepted().body("Request Accepted for processing"));
 
     }
 
-    private String resolveResponseBody(Response response, Map<String, String> context){
+    private ResponseEntity<String> resolveResponseBody(Response response, Map<String, String> context){
         String responseBody = response.getBody();
         for (Map.Entry<String, String> entry : context.entrySet()) {
             responseBody = responseBody.replace("{" + entry.getKey() + "}", entry.getValue());
         }
-        return responseBody;
+        return ResponseEntity.ok().body(responseBody);
     }
     @Override
     public String updateStatusForRequest(RequestId requestId,HttpStatus status){

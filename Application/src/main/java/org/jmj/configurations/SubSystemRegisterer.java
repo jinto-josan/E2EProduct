@@ -7,6 +7,7 @@ import org.jmj.entity.SubSystem;
 import org.jmj.repository.SubsystemRepository;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -36,6 +37,7 @@ public class SubSystemRegisterer implements InitializingBean {
         try {
             requestMappingHandlerMapping.registerMapping(
                     RequestMappingInfo.paths("/"+subSystem.getName()+"/**")
+                            .produces(MediaType.APPLICATION_JSON_VALUE)
                             .build(),
                     generatedController,
                     generatedController.getClass().getMethod("handleRequest", ServerHttpRequest.class, HttpHeaders.class)

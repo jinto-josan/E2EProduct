@@ -13,11 +13,17 @@ import org.jmj.services.RequestProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 import java.lang.reflect.Modifier;
+
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.OK;
 
 @Component
 @Slf4j
@@ -40,10 +46,9 @@ public class RestControllerGenerator {
                         .ofType(RestController.class)
                         .build())
                 // It doesnt register using RequestMapping
-//                .annotateType(AnnotationDescription.Builder
-//                        .ofType(RequestMapping.class)
-//                        .defineArray("value", "/"+subSystem.getName())
-//                        .build())
+                .annotateType(AnnotationDescription.Builder
+                        .ofType(ResponseBody.class)
+                        .build())
                 //post method
                 .defineMethod("handleRequest", String.class, Modifier.PUBLIC)
                 .withParameter(ServerHttpRequest.class)
@@ -70,8 +75,13 @@ public class RestControllerGenerator {
             this.subSystem = subSystem;
         }
 
+
         public String handleRequest(@Argument(0) ServerHttpRequest req, @Argument(1) HttpHeaders headers) {
-            return requestProcessor.processRequest(req, headers, subSystem);
+            var response= requestProcessor.processRequest(req, headers, subSystem);
+            return switch ((HttpStatus) response.getStatusCode()) {
+                case OK -> response.getBody();
+                default -> throw new ResponseStatusException(response.getStatusCode(), response.getBody());
+            };
         }
 
 

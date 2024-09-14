@@ -61,38 +61,18 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
-
-
-
-<!--        <dependency>-->
-<!--            <groupId>com.azure.spring</groupId>-->
-<!--            <artifactId>spring-cloud-azure-starter-integration-eventhubs</artifactId>-->
-<!--        </dependency>-->
-        <!-- for fluent API based config -->
-<!--        <dependency>-->
-<!--            <groupId>com.azure</groupId>-->
-<!--            <artifactId>azure-messaging-eventhubs</artifactId>-->
-<!--        </dependency>-->
-        <!-- For connecting to azure resources -->
         <dependency>
             <groupId>com.azure</groupId>
             <artifactId>azure-identity</artifactId>
         </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>com.stormpath.spring</groupId>-->
-<!--            <artifactId>stormpath-spring-security-spring-boot-starter</artifactId>-->
-<!--            <version></version>-->
-<!--        </dependency>-->
 
-
-        <!-- karate -->
-<!--        <dependency>-->
-<!--            <groupId>com.intuit.karate</groupId>-->
-<!--            <artifactId>karate-junit5</artifactId>-->
-<!--            <version>1.4.1</version>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
+<!--         karate -->
+        <dependency>
+            <groupId>com.intuit.karate</groupId>
+            <artifactId>karate-junit5</artifactId>
+            <version>1.4.1</version>
+        </dependency>
 
         <!-- h2 database -->
         <dependency>
@@ -113,10 +93,12 @@
             <version>1.18.34</version>
             <scope>provided</scope>
         </dependency>
-
-
-
-
+        <dependency>
+            <groupId>com.intuit.karate</groupId>
+            <artifactId>karate-junit5</artifactId>
+            <version>1.4.1</version>
+            <scope>compile</scope>
+        </dependency>
 
 
     </dependencies>
