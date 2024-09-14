@@ -45,13 +45,13 @@ public class ConfigurationController {
         requestProcessor.modifyRequest(subsystem,request);
         return "Modified Request";
     }
-//    @PostMapping("/update-status-request/{subSystemId}")
-//    public String updateStatusForRequestId(@PathVariable("subSystemId") String subSystemID,
-//                                           @RequestParam("requestMethod")String method,
-//                                           @RequestParam("requestPath") String path, @RequestParam("status") Integer status) {
-//        requestProcessor.updateStatusForRequest(requestProcessor.getRequestId(subSystemID,method,path), HttpStatus.valueOf(status));
-//        return "Updated Status";
-//    }
+    @PostMapping("/update-status-request/{subSystemId}")
+    public String updateStatusForRequestId(@PathVariable("subSystemId") String subSystemID,
+                                           @RequestParam("requestMethod")String method,
+                                           @RequestParam("requestPath") String path, @RequestParam("status") Integer status) {
+        requestProcessor.updateStatusForRequest(requestProcessor.getRequestId(subSystemID,method,path), HttpStatus.valueOf(status));
+        return "Updated Status";
+    }
 
     @PostMapping("/create-response/{subSystemId}")
     public Map<RequestId,String> createResponse(@PathVariable("subSystemId") String subSystemID, @RequestParam("requestMethod")String method, @RequestParam("requestPath") String path, @RequestBody List<JsonNode> responses) {

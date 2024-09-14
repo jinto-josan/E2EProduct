@@ -15,7 +15,7 @@ public interface RequestProcessor {
      public ResponseEntity<String> processRequest(ServerHttpRequest req, HttpHeaders headers, SubSystem subSystem);
      public void modifyRequest(String subsystem, List<Request> request);
      public RequestId getRequestId(String subSystemID, String method, String path);
-//     public String updateStatusForRequest(RequestId requestId, HttpStatus status);
+     public String updateStatusForRequest(RequestId requestId, HttpStatus status);
 
 //    public default String processRequestStr(ServerHttpRequest req, HttpHeaders headers, SubSystem subSystem){return null;} ;
 

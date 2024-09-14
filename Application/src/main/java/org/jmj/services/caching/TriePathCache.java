@@ -15,6 +15,7 @@ public class TriePathCache implements PathCache {
     public class TrieNode {
         private final Map<String, TrieNode> children = new HashMap<>();
         private boolean isEndOfPath;
+        private HttpStatus status=HttpStatus.OK;
     }
 
     private final Map<String, TrieNode> roots = new HashMap<>();
@@ -31,26 +32,26 @@ public class TriePathCache implements PathCache {
         }
         currentNode.setEndOfPath(true);
     }
-//    @Override
-//    public synchronized void updateStatus(String subSystemName, String path, HttpStatus status) {
-//        TrieNode root = roots.get(subSystemName);
-//        if (root == null) {
-//            return;
-//        }
-//        TrieNode currentNode = root;
-//        String[] segments = path.split("/");
-//        for (String segment : segments) {
-//            if (!segment.isEmpty()) {
-//                currentNode = currentNode.getChildren().get(segment);
-//                if (currentNode == null) {
-//                    return;
-//                }
-//            }
-//        }
-//        if (currentNode.isEndOfPath()) {
-//            currentNode.setStatus(status);
-//        }
-//    }
+    @Override
+    public synchronized void updateStatus(String subSystemName, String path, HttpStatus status) {
+        TrieNode root = roots.get(subSystemName);
+        if (root == null) {
+            return;
+        }
+        TrieNode currentNode = root;
+        String[] segments = path.split("/");
+        for (String segment : segments) {
+            if (!segment.isEmpty()) {
+                currentNode = currentNode.getChildren().get(segment);
+                if (currentNode == null) {
+                    return;
+                }
+            }
+        }
+        if (currentNode.isEndOfPath()) {
+            currentNode.setStatus(status);
+        }
+    }
 
 
     @Override
@@ -87,7 +88,7 @@ public class TriePathCache implements PathCache {
                 currentNode = nextNode;
             }
         }
-        return currentNode.isEndOfPath()?new RequestPathAndContext(actualPath.toString(), context):null;
+        return currentNode.isEndOfPath()?new RequestPathAndContext(actualPath.toString(), context,currentNode.getStatus()):null;
     }
 
     @Override
