@@ -54,8 +54,7 @@ public class RequestProcessorImpl implements RequestProcessor {
         RequestId requestId = getRequestId(subSystem.getName(), req.getMethod().name(), actRqstPthAndCtxt.path());
         List<Response> responses = responseRepository.findById_RequestIdAndId_StatusCodeOrderById_Type(
                 getRequestId(subSystem.getName(), req.getMethod().name(), actRqstPthAndCtxt.path()),
-                actRqstPthAndCtxt.status()
-        );
+                HttpStatus.OK);
         if (responses.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No response configuration found for the request");
         }
@@ -81,11 +80,7 @@ public class RequestProcessorImpl implements RequestProcessor {
         }
         return ResponseEntity.ok().body(responseBody);
     }
-    @Override
-    public String updateStatusForRequest(RequestId requestId,HttpStatus status){
-        pathCache.updateStatus(requestId.getSubSystemId(),requestId.getPath(), status);
-        return "Updated";
-    }
+
 
 
     @Async
