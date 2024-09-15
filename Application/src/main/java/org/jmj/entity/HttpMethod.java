@@ -1,5 +1,7 @@
 package org.jmj.entity;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+
 public enum HttpMethod {
     GET,
     POST,
@@ -8,5 +10,10 @@ public enum HttpMethod {
     PATCH,
     HEAD,
     OPTIONS,
-    TRACE
+    TRACE;
+
+    @JsonCreator
+    public static HttpMethod fromString(String value) {
+        return valueOf(value.toUpperCase());
+    }
 }

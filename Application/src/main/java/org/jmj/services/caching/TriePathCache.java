@@ -1,9 +1,8 @@
 package org.jmj.services.caching;
 
 import lombok.Data;
-import org.springframework.context.annotation.Scope;
+import org.jmj.entity.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -15,7 +14,7 @@ public class TriePathCache implements PathCache {
     public class TrieNode {
         private final Map<String, TrieNode> children = new HashMap<>();
         private boolean isEndOfPath;
-        private HttpStatus status=HttpStatus.OK;
+        private Map<HttpMethod, HttpStatus> statuses = new HashMap<>();
     }
 
     private final Map<String, TrieNode> roots = new HashMap<>();
@@ -32,8 +31,10 @@ public class TriePathCache implements PathCache {
         }
         currentNode.setEndOfPath(true);
     }
+    //It will configure response status for the path, even if response is not found
+    //This feature is setup for test cases where no configured response is required.
     @Override
-    public synchronized void updateStatus(String subSystemName, String path, HttpStatus status) {
+    public synchronized void updateStatus(String subSystemName, String path, HttpMethod method, HttpStatus status) {
         TrieNode root = roots.get(subSystemName);
         if (root == null) {
             return;
@@ -49,7 +50,7 @@ public class TriePathCache implements PathCache {
             }
         }
         if (currentNode.isEndOfPath()) {
-            currentNode.setStatus(status);
+            currentNode.getStatuses().put(method, status);
         }
     }
 
@@ -88,7 +89,7 @@ public class TriePathCache implements PathCache {
                 currentNode = nextNode;
             }
         }
-        return currentNode.isEndOfPath()?new RequestPathAndContext(actualPath.toString(), context,currentNode.getStatus()):null;
+        return currentNode.isEndOfPath()?new RequestPathAndContext(actualPath.toString(), context,currentNode.getStatuses()):null;
     }
 
     @Override
