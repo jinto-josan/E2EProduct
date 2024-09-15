@@ -1,8 +1,11 @@
 package org.jmj.entity;
 
 import com.fasterxml.jackson.annotation.JsonRawValue;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.jmj.annotations.FqdnValidator;
 
 @Entity
@@ -13,6 +16,7 @@ import org.jmj.annotations.FqdnValidator;
 public class Response {
     @lombok.NonNull
     @EmbeddedId
+    @JsonUnwrapped
     private ResponseId id;
 //Todo: Only one Rest response to be there for a request and no other Rest response should be there for the same request
     //Todo: Multiple request for same type to be allowed

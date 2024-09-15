@@ -30,6 +30,10 @@ public class ResponseEntityBuilder {
         resp.get().setBody(bodyStr);
         return this;
     }
+    public ResponseEntityBuilder body(String body){
+        resp.get().setBody(body);
+        return this;
+    }
     public ResponseEntityBuilder fqdn(String fqdn){
         if(fqdn!=null){
             resp.get().setFqdn(fqdn);

@@ -1,7 +1,7 @@
 package org.jmj.entity;
 
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +15,7 @@ import java.util.Set;
 public class Request {
     @EmbeddedId
     @lombok.NonNull
+    @JsonUnwrapped
     private RequestId id;
 
     @Lob
