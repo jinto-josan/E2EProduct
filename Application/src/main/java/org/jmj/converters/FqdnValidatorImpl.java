@@ -10,7 +10,7 @@ public class FqdnValidatorImpl implements ConstraintValidator<FqdnValidator, Res
 
     @Override
     public boolean isValid(Response response, ConstraintValidatorContext context) {
-        if (response.getId().getType() == ResponseType.EVENT_HUB) {
+        if (response.getType() == ResponseType.EVENT_HUB) {
             return response.getFqdn() != null && !response.getFqdn().isEmpty() && response.getFqdn().matches("^[a-zA-Z0-9.-]+/[a-zA-Z-]{2,}$");
         }
         return true;

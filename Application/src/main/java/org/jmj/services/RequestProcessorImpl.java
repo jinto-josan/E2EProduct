@@ -1,11 +1,8 @@
 package org.jmj.services;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.jmj.builder.ResponseEntityBuilder;
+import org.jmj.constants.Constants;
 import org.jmj.entity.*;
 import org.jmj.repository.RequestRepository;
 import org.jmj.repository.ResponseRepository;
@@ -14,21 +11,13 @@ import org.jmj.services.caching.PathCache;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.server.RequestPath;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.TransactionSystemException;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static org.jmj.entity.ResponseType.REST;
 
@@ -52,25 +41,24 @@ public class RequestProcessorImpl implements RequestProcessor {
         //to get both the configured request path and also set context
         var actRqstPthAndCtxt=pathCache.search(subSystem.getName(), path);
         RequestId requestId = getRequestId(subSystem.getName(), req.getMethod().name(), actRqstPthAndCtxt.path());
-        List<Response> responses = responseRepository.findById_RequestIdAndId_StatusCodeOrderById_Type(
+        List<Response> responses = responseRepository.findByRequest_IdAndStatusCodeOrderByType(
                 getRequestId(subSystem.getName(), req.getMethod().name(), actRqstPthAndCtxt.path()),
-                actRqstPthAndCtxt.status()
+                actRqstPthAndCtxt.getStatus(req.getMethod())
         );
-        if (responses.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No response configuration found for the request");
-        }
+        if (responses.isEmpty())
+            return ResponseEntity.status(actRqstPthAndCtxt.getStatus(req.getMethod())).body(Constants.NO_CONFIG_MSG);
 
         processAsyncResponses(responses, actRqstPthAndCtxt.context());
 
         return responses.stream()
-                .filter(response -> response.getId().getType() == REST)
+                .filter(response -> response.getType() == REST)
                 .findFirst()
                 .map(response -> {
                     log.info("Response found: {}", response.getBody());
                     return resolveResponseBody(response, actRqstPthAndCtxt.context());
                 })
                 //If no rest response it means some async request was present
-                .orElseGet(() -> ResponseEntity.accepted().body("Request Accepted for processing"));
+                .orElseGet(() -> ResponseEntity.accepted().body(Constants.ONLY_ASYNC_RESPONSES_MSG));
 
     }
 
@@ -79,11 +67,11 @@ public class RequestProcessorImpl implements RequestProcessor {
         for (Map.Entry<String, String> entry : context.entrySet()) {
             responseBody = responseBody.replace("{" + entry.getKey() + "}", entry.getValue());
         }
-        return ResponseEntity.ok().body(responseBody);
+        return ResponseEntity.status(response.getStatusCode()).body(responseBody);
     }
     @Override
     public String updateStatusForRequest(RequestId requestId,HttpStatus status){
-        pathCache.updateStatus(requestId.getSubSystemId(),requestId.getPath(), status);
+        pathCache.updateStatus(requestId.getSubSystemId(),requestId.getPath(),requestId.getMethod(),status);
         return "Updated";
     }
 
@@ -92,7 +80,7 @@ public class RequestProcessorImpl implements RequestProcessor {
     private void processAsyncResponses(List<Response> responses, Map<String, String> context){
         //response processed in order of response order
         responses.forEach(response -> {
-            switch(response.getId().getType()){
+            switch(response.getType()){
                 case REST:
                     log.info("Skipping rest response");
                     break;
@@ -134,5 +122,10 @@ public class RequestProcessorImpl implements RequestProcessor {
     @Override
     public RequestId getRequestId(String subSystemID, String method, String path) {
         return new RequestId(path, HttpMethod.valueOf(method.toUpperCase()), subSystemID);
+    }
+
+    @Override
+    public RequestId getRequestId(String subSystemID, RequestId partialRequestId) {
+        return new RequestId(partialRequestId.getPath(), partialRequestId.getMethod(), subSystemID);
     }
 }

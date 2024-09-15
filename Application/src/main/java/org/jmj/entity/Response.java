@@ -1,12 +1,16 @@
 package org.jmj.entity;
 
 import com.fasterxml.jackson.annotation.JsonRawValue;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.jmj.annotations.FqdnValidator;
+import org.jmj.entity.deserializers.HttpStatusCodeDeserializer;
 
 @Entity
 @Data
@@ -14,12 +18,20 @@ import org.jmj.annotations.FqdnValidator;
 @NoArgsConstructor
 @FqdnValidator
 public class Response {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     @lombok.NonNull
-    @EmbeddedId
-    @JsonUnwrapped
-    private ResponseId id;
-//Todo: Only one Rest response to be there for a request and no other Rest response should be there for the same request
-    //Todo: Multiple request for same type to be allowed
+    @Enumerated(value = EnumType.STRING)
+    @JsonDeserialize(using = HttpStatusCodeDeserializer.class)
+    private  org.springframework.http.HttpStatus statusCode;
+
+    @Enumerated(EnumType.STRING)
+    @lombok.NonNull
+    private ResponseType type;
+
     @Lob
     @JsonRawValue
     private String body;
@@ -33,24 +45,30 @@ public class Response {
 
     @ManyToOne
     @JoinColumns({
-            @JoinColumn(name = "path", referencedColumnName = "path",insertable = false, updatable = false),
-            @JoinColumn(name = "method", referencedColumnName = "method",insertable = false, updatable = false),
-            @JoinColumn(name = "sub_system_id", referencedColumnName = "sub_system_id", insertable = false, updatable = false)
+            @JoinColumn(name = "path", referencedColumnName = "path"),
+            @JoinColumn(name = "method", referencedColumnName = "method"),
+            @JoinColumn(name = "sub_system_id", referencedColumnName = "sub_system_id")
     })
+    @JsonUnwrapped
     @lombok.NonNull
     private Request request;
 
 
-    @PrePersist
-    @PreUpdate
-    private void setRequest() {
-        if (request != null) {
-            this.id.setRequestId(request.getId());
-        }
+//    @PrePersist
+//    @PreUpdate
+//    private void setRequest() {
+//        if (request != null) {
+//            this.id.setRequestId(request.getId());
+//        }
+//    }
+
+    //used for setting body while deserializing
+    @JsonSetter("body")
+    public void jsonBodySetter(JsonNode body) {
+        this.body = body.toString();
     }
 
 
     //Todo: Unique Constraint for type rest and status
 
-    // Getters and Setters
 }

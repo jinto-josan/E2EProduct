@@ -1,11 +1,9 @@
 package org.jmj.controllers;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.jmj.builder.ResponseEntityBuilder;
 import org.jmj.configurations.SubSystemRegisterer;
 import org.jmj.converters.HttpMethodEditor;
 import org.jmj.entity.*;
@@ -13,13 +11,14 @@ import org.jmj.repository.RequestRepository;
 import org.jmj.repository.ResponseRepository;
 import org.jmj.repository.SubsystemRepository;
 import org.jmj.services.RequestProcessor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.TransactionSystemException;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController("/configuration")
@@ -41,55 +40,53 @@ public class ConfigurationController {
     }
 
     @PostMapping("/create-request/{subSystemId}")
-    public String createRequest(@PathVariable("subSystemId") String subsystem, @RequestBody List<Request> request) {
+    public String createRequest(@PathVariable("subSystemId") String subsystem,
+                                @RequestBody List<Request> request) {
         requestProcessor.modifyRequest(subsystem,request);
         return "Modified Request";
     }
     @PostMapping("/update-status-request/{subSystemId}")
     public String updateStatusForRequestId(@PathVariable("subSystemId") String subSystemID,
-                                           @RequestParam("requestMethod")String method,
-                                           @RequestParam("requestPath") String path, @RequestParam("status") Integer status) {
-        requestProcessor.updateStatusForRequest(requestProcessor.getRequestId(subSystemID,method,path), HttpStatus.valueOf(status));
+                                           @RequestBody List<Response> responses) {
+        responses.forEach(response -> {
+            requestProcessor.updateStatusForRequest(requestProcessor.getRequestId(
+                    subSystemID, response.getRequest().getId()), response.getStatusCode());
+        });
         return "Updated Status";
     }
 
     @PostMapping("/create-response/{subSystemId}")
-    public Map<RequestId,String> createResponse(@PathVariable("subSystemId") String subSystemID, @RequestParam("requestMethod")String method, @RequestParam("requestPath") String path, @RequestBody List<JsonNode> responses) {
-//Todo: Process of multiple response and their status to be returned
+    public Map<RequestId,String> createResponse(@PathVariable("subSystemId") String subSystemID,
+                                                @RequestBody Request request) {
         Map<RequestId,String> requestStatuses = new HashMap<>();
-        responses.forEach(
-                    resp -> {
-                        requestRepository.findById(requestProcessor.getRequestId(subSystemID, method, path)).ifPresentOrElse(
-                                req -> {
-                                    try {
-                                        new ResponseEntityBuilder()
-                                                .responseId(req, resp.get("status").asInt(), resp.get("type").asText())
-                                                .body(resp.get("body"))
-                                                .order(resp.get("responseOrder").asInt())
-                                                .fqdn(resp.has("fqdn")?resp.get("fqdn").asText():null)
-                                                .build()
-                                                .ifPresent(responseRepository::save);
-                                        requestStatuses.put(requestProcessor.getRequestId(subSystemID, method, path), HttpStatus.CREATED.toString());
-                                    }
-                                    catch (TransactionSystemException e){
-                                        Throwable t = e.getCause();
-                                        while ((t != null) && !(t instanceof ConstraintViolationException)) {
-                                            t = t.getCause();
-                                        }
-                                        if (t instanceof ConstraintViolationException) {
-                                            requestStatuses.put(requestProcessor.getRequestId(subSystemID, method, path),((ConstraintViolationException) t).getConstraintViolations().stream().map(ConstraintViolation::getMessage).collect(Collectors.joining(",")));
-                                        }
-                                    }
-                                    catch (Exception e){
-                                        e.printStackTrace();
-                                        requestStatuses.put(requestProcessor.getRequestId(subSystemID, method, path),e.getMessage());
-                                    }
-
-                                },
-                                () -> {
-                                    requestStatuses.put(requestProcessor.getRequestId(subSystemID, method, path),HttpStatus.NOT_FOUND.toString());
+        RequestId requestId=requestProcessor.getRequestId(subSystemID, request.getId());
+        requestRepository.findById(requestId).ifPresentOrElse(
+                req->{
+                    request.getResponses().forEach(
+                            resp -> {
+                                try {
+                                    resp.setRequest(req);
+                                    responseRepository.save(resp);
+                                    requestStatuses.put(requestId, HttpStatus.CREATED.toString());
                                 }
-                        );
+                                catch (TransactionSystemException e){
+                                    Throwable t = e.getCause();
+                                    while ((t != null) && !(t instanceof ConstraintViolationException)) {
+                                        t = t.getCause();
+                                    }
+                                    if (t instanceof ConstraintViolationException) {
+                                        requestStatuses.put(requestId,((ConstraintViolationException) t).getConstraintViolations().stream().map(ConstraintViolation::getMessage).collect(Collectors.joining(",")));
+                                    }
+                                }
+                                catch (Exception e){
+                                    e.printStackTrace();
+                                    requestStatuses.put(requestId,e.getMessage());
+                                }
+                            }
+                    );
+                },
+                () -> {
+                    requestStatuses.put(requestId,HttpStatus.NOT_FOUND.toString());
                 }
         );
         return requestStatuses;
@@ -101,9 +98,9 @@ public class ConfigurationController {
                                                              @RequestParam("requestMethod")String method,
                                                              @RequestParam("requestPath") String path) {
         return status!=null?
-                responseRepository.findById_RequestIdAndId_StatusCodeOrderById_Type(requestProcessor.getRequestId(subSystemID, method, path), HttpStatus.valueOf(status)).stream()
+                responseRepository.findByRequest_IdAndStatusCodeOrderByType(requestProcessor.getRequestId(subSystemID, method, path), HttpStatus.valueOf(status)).stream()
                         .collect(Collectors.toMap(Response::getId, response -> List.of(response.getBody()))):
-                responseRepository.findById_RequestId(requestProcessor.getRequestId(subSystemID,method,path)).stream()
+                responseRepository.findByRequest_Id(requestProcessor.getRequestId(subSystemID,method,path)).stream()
                         .collect(Collectors.toMap(Response::getId, response -> List.of(response.getBody())));
     }
 
@@ -111,5 +108,6 @@ public class ConfigurationController {
     public void initBinder(WebDataBinder webDataBinder){
         webDataBinder.registerCustomEditor(HttpMethod.class,new HttpMethodEditor());
     }
+
 
 }
