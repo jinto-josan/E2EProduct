@@ -1,6 +1,6 @@
 package org.jmj.controllers;
-import com.intuit.karate.junit5.Karate;
-import org.jmj.services.karate.Runner;
+
+import org.jmj.services.karate.KarateRunner;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,15 +12,15 @@ import java.io.IOException;
 @RequestMapping("/karate")
 public class KarateController {
 
-    Runner runner;
-    KarateController(Runner runner) {
-        this.runner = runner;
+    KarateRunner karateRunner;
+    KarateController(KarateRunner karateRunner) {
+        this.karateRunner = karateRunner;
     }
 
     @GetMapping("/runTest")
     public ResponseEntity<String> runTest() throws IOException {
         String classpathStr = System.getProperty("java.class.path");
 //        System.out.print(classpathStr);
-        return runner.testSingleFeature("classpath:./features/request.feature");
+        return karateRunner.testSingleFeature();
     }
 }
