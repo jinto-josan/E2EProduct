@@ -1,0 +1,8 @@
+{
+  "smApi":  "http://localhost:8096/",
+  "crmContractUri": "v1/contract/crm",
+
+  "e2eApi": "http://localhost:8080/",
+  "createResponse": "create-response/e2einternal",
+  "customSendContractUrl": "http://localhost:8080/e2einternal/send/uptimecontract"
+}

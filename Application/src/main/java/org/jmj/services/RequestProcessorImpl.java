@@ -28,7 +28,7 @@ public class RequestProcessorImpl implements RequestProcessor {
     private final ResponseRepository responseRepository;
     private final SubsystemRepository subsystemRepository;
     private final RequestRepository requestRepository;
-    private final AzEHPublisherService azEHPublisherService;
+    private final AzPublisherService azPublisherService;
     private final PathCache pathCache;
     //Todo: Genearte Rest response based for subsystem based on open api json
 
@@ -86,7 +86,12 @@ public class RequestProcessorImpl implements RequestProcessor {
                     break;
                 case EVENT_HUB:
                     log.info("Sending to Event Hub: {}", response.getFqdn());
-                    azEHPublisherService.publishEvent(response.getFqdn() ,resolveResponseBody(response, context))
+                    azPublisherService.publish(response.getType(),response.getFqdn() ,resolveResponseBody(response, context))
+                            .subscribe(log::info);
+                    break;
+                case SERVICEBUS:
+                    log.info("Sending to Service Bus: {}", response.getFqdn());
+                    azPublisherService.publish(response.getType(),response.getFqdn(), resolveResponseBody(response, context))
                             .subscribe(log::info);
                     break;
                 case KAFKA:

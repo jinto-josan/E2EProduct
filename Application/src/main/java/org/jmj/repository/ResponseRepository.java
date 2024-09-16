@@ -2,11 +2,13 @@ package org.jmj.repository;
 
 import org.jmj.entity.RequestId;
 import org.jmj.entity.Response;
+import org.jmj.entity.ResponseType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ResponseRepository extends JpaRepository<Response, Long> {
@@ -16,5 +18,8 @@ public interface ResponseRepository extends JpaRepository<Response, Long> {
 //    List<Response> findById(RequestId requestId);
 
     List<Response> findByRequest_Id(RequestId requestId);
+    Optional<Response> findByRequest_IdAndType(RequestId requestId, ResponseType type);
+    Optional<Response> findByRequest_IdAndFqdn(RequestId requestId, String fqdn);
+
     List<Response> findByRequest_IdAndStatusCodeOrderByType(RequestId requestId, HttpStatus statusCode);
 }

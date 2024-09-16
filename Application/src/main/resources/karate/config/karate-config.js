@@ -1,22 +1,14 @@
 function fn() {
+  var config=read(karate.properties["e2e.base_path"]+"config/config.json")
+  config.base_path=karate.properties["e2e.base_path"];
+  //By default values are taken from config-urls.json
+  karate.merge(config, read(config.base_path+"config/config.json"));
+  if(karate.properties["e2e.env"]){
+  //If env is passed from command line, values are taken from config-<env>.json and are merged
+    config.env=karate.properties["e2e.env"];
+    config=karate.merge(config, read(config.base_path+"config/config-"+karate.properties["e2e.env"]+".json"));
+  }
 
-
-  karate.log(karate.getProperties())
-  var config=read(karate.properties['e2e.base_dir']+'config/config.json')
   karate.log(config)
-
-
-//  var result = karate.callSingle('classpath:e2e/lifecycle/authorization/auth.feature');
-//
-//  config.token= result.accessToken;
-//
-//
-//
-//  // config.auth = {accessToken:result.accessToken}
-//  karate.log('print log token is: ',config.token);
-//  var LM = Java.type('OAuthLogModifier');
-//  karate.configure('logModifier', LM.INSTANCE);
-//  karate.configure('connectTimeout', 10000);
-//  karate.configure('readTimeout', 600000);
-//  return config;
+  return config;
 }

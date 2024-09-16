@@ -57,39 +57,8 @@ public class ConfigurationController {
 
     @PostMapping("/create-response/{subSystemId}")
     public Map<RequestId,String> createResponse(@PathVariable("subSystemId") String subSystemID,
-                                                @RequestBody Request request) {
-        Map<RequestId,String> requestStatuses = new HashMap<>();
-        RequestId requestId=requestProcessor.getRequestId(subSystemID, request.getId());
-        requestRepository.findById(requestId).ifPresentOrElse(
-                req->{
-                    request.getResponses().forEach(
-                            resp -> {
-                                try {
-                                    resp.setRequest(req);
-                                    responseRepository.save(resp);
-                                    requestStatuses.put(requestId, HttpStatus.CREATED.toString());
-                                }
-                                catch (TransactionSystemException e){
-                                    Throwable t = e.getCause();
-                                    while ((t != null) && !(t instanceof ConstraintViolationException)) {
-                                        t = t.getCause();
-                                    }
-                                    if (t instanceof ConstraintViolationException) {
-                                        requestStatuses.put(requestId,((ConstraintViolationException) t).getConstraintViolations().stream().map(ConstraintViolation::getMessage).collect(Collectors.joining(",")));
-                                    }
-                                }
-                                catch (Exception e){
-                                    e.printStackTrace();
-                                    requestStatuses.put(requestId,e.getMessage());
-                                }
-                            }
-                    );
-                },
-                () -> {
-                    requestStatuses.put(requestId,HttpStatus.NOT_FOUND.toString());
-                }
-        );
-        return requestStatuses;
+                                                               @RequestBody Request request) {
+        return validateAndUpdateResponse(subSystemID,request);
     }
 
     @GetMapping("/get-response/{subSystemId}")
@@ -109,5 +78,60 @@ public class ConfigurationController {
         webDataBinder.registerCustomEditor(HttpMethod.class,new HttpMethodEditor());
     }
 
+    private Map<RequestId,String> validateAndUpdateResponse(String subSystemID, Request request){
+        //only one rest response is allowed and for other - fqdn one response is allowed
+        Map<RequestId,String> requestStatuses = new HashMap<>();
+        RequestId requestId=requestProcessor.getRequestId(subSystemID, request.getId());
+        requestRepository.findById(requestId).ifPresentOrElse(
+                req -> {
+                    request.getResponses().forEach(
+                            resp -> {
+                                try {
+                                    if (resp.getType().equals(ResponseType.REST)) {
+                                        // Update if response already has a rest type for the request ID
+                                        responseRepository.findByRequest_IdAndType(requestId, resp.getType()).ifPresentOrElse(existingResp -> {
+                                            existingResp.setBody(resp.getBody());
+                                            responseRepository.save(existingResp);
+                                            requestStatuses.put(requestId, HttpStatus.OK.toString());
+                                        }, () -> {
+                                            resp.setRequest(req);
+                                            responseRepository.save(resp);
+                                            requestStatuses.put(requestId, HttpStatus.OK.toString());
+                                        });
+                                    } else {
+                                        // Update if type is others based on FQDN and request ID
+                                        responseRepository.findByRequest_IdAndFqdn(requestId, resp.getFqdn())
+                                                .ifPresentOrElse(existingResp -> {
+                                            existingResp.setBody(resp.getBody());
+                                            responseRepository.save(existingResp);
+                                            requestStatuses.put(requestId, HttpStatus.OK.toString());
+                                        }, () -> {
+                                            resp.setRequest(req);
+                                            responseRepository.save(resp);
+                                            requestStatuses.put(requestId, HttpStatus.OK.toString());
+                                        });
+                                    }
+                                } catch (TransactionSystemException e) {
+                                    Throwable t = e.getCause();
+                                    while ((t != null) && !(t instanceof ConstraintViolationException)) {
+                                        t = t.getCause();
+                                    }
+                                    if (t instanceof ConstraintViolationException) {
+                                        requestStatuses.put(requestId, ((ConstraintViolationException) t).getConstraintViolations().stream().map(ConstraintViolation::getMessage).collect(Collectors.joining(",")));
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    requestStatuses.put(requestId, e.getMessage());
+                                }
+                            }
+                    );
+                },
+                () -> {
+                    requestStatuses.put(requestId, HttpStatus.NOT_FOUND.toString());
+                }
+        );
+        return requestStatuses;
+
+    }
 
 }
