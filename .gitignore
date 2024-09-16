@@ -38,3 +38,4 @@ Thumbs.db
 *.old
 *.orig
 *.rej
+Application/src/main/resources/karate/config/config.json
