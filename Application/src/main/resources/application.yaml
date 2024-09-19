@@ -26,3 +26,12 @@ spring:
   h2:
     console:
       enabled: true
+  cloud:
+    azure:
+      cosmos:
+        endpoint: https://csg-weu-stg-dmota-3-sm-cosmos.documents.azure.com:443/
+        database: servicemanagement-db
+        key: ${COSMOSDB_KEY}
+        client:
+          connection-mode: DIRECT
+

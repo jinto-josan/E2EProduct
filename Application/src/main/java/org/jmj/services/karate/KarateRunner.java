@@ -28,7 +28,7 @@ public class KarateRunner {
     }
 
     public ResponseEntity<String> testSingleFeature() throws IOException {
-        var path=Constants.KARATE_BASE_DIR+"features";
+        var path=Constants.KARATE_BASE_DIR;
         /*
             working dir - default is absolute path of cwd. It is used to get relative path.
             config dir - default is working-dir. It is used to get karate-config.js
@@ -45,9 +45,9 @@ public class KarateRunner {
         log.info("Test results: {}", results);
 
         if (results.getFailCount() == 0) {
-            return ResponseEntity.ok("All tests passed.");
+            return ResponseEntity.ok("All tests passed." + results.getReportDir());
         } else {
-            return ResponseEntity.ok().body("Some tests failed.");
+            return ResponseEntity.ok().body("Some tests failed. " );
         }
 
     }

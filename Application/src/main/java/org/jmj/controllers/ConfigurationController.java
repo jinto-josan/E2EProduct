@@ -87,29 +87,57 @@ public class ConfigurationController {
                     request.getResponses().forEach(
                             resp -> {
                                 try {
-                                    if (resp.getType().equals(ResponseType.REST)) {
-                                        // Update if response already has a rest type for the request ID
-                                        responseRepository.findByRequest_IdAndType(requestId, resp.getType()).ifPresentOrElse(existingResp -> {
-                                            existingResp.setBody(resp.getBody());
-                                            responseRepository.save(existingResp);
-                                            requestStatuses.put(requestId, HttpStatus.OK.toString());
-                                        }, () -> {
-                                            resp.setRequest(req);
-                                            responseRepository.save(resp);
-                                            requestStatuses.put(requestId, HttpStatus.OK.toString());
-                                        });
-                                    } else {
-                                        // Update if type is others based on FQDN and request ID
-                                        responseRepository.findByRequest_IdAndFqdn(requestId, resp.getFqdn())
+                                    switch (resp.getType()) {
+                                        case REST:
+                                            // Update if response already has a rest type for the request ID
+                                            responseRepository.findByRequest_IdAndType(requestId, resp.getType()).ifPresentOrElse(existingResp -> {
+                                                existingResp.setBody(resp.getBody());
+                                                existingResp.setCustomProperties(resp.getCustomProperties());
+                                                responseRepository.save(existingResp);
+                                                requestStatuses.put(requestId, HttpStatus.OK.toString());
+                                            }, () -> {
+                                                resp.setRequest(req);
+                                                responseRepository.save(resp);
+                                                requestStatuses.put(requestId, HttpStatus.OK.toString());
+                                            });
+                                            break;
+                                        case COSMOS:
+                                            //Only one query for a container supported now
+                                            responseRepository.findByRequest_IdAndFqdn(requestId, resp.getFqdn())
+                                                    .ifPresentOrElse(existingResp -> {
+                                                        existingResp.setBody(resp.getBody());
+                                                        responseRepository.save(existingResp);
+                                                        requestStatuses.put(requestId, HttpStatus.OK.toString());
+                                                    }, () -> {
+                                                        resp.setRequest(req);
+                                                        responseRepository.save(resp);
+                                                        requestStatuses.put(requestId, HttpStatus.OK.toString());
+                                                    });
+                                            // Update if type is cosmos based on FQDN and request ID and body which is query
+//                                            responseRepository.findByRequest_idAndFqdnAndBody(requestId, resp.getFqdn(),resp.getBody())
+//                                                .ifPresentOrElse(existingResp -> {
+//                                                    existingResp.setBody(resp.getBody());
+//                                                    responseRepository.save(existingResp);
+//                                                    requestStatuses.put(requestId, HttpStatus.OK.toString());
+//                                                }, () -> {
+//                                                    resp.setRequest(req);
+//                                                    responseRepository.save(resp);
+//                                                    requestStatuses.put(requestId, HttpStatus.OK.toString());
+//                                                });
+                                            break;
+                                        default:
+                                            // Update if type is others based on FQDN and request ID
+                                            responseRepository.findByRequest_IdAndFqdn(requestId, resp.getFqdn())
                                                 .ifPresentOrElse(existingResp -> {
-                                            existingResp.setBody(resp.getBody());
-                                            responseRepository.save(existingResp);
-                                            requestStatuses.put(requestId, HttpStatus.OK.toString());
-                                        }, () -> {
-                                            resp.setRequest(req);
-                                            responseRepository.save(resp);
-                                            requestStatuses.put(requestId, HttpStatus.OK.toString());
-                                        });
+                                                    existingResp.setBody(resp.getBody());
+                                                    existingResp.setCustomProperties(resp.getCustomProperties());
+                                                    responseRepository.save(existingResp);
+                                                    requestStatuses.put(requestId, HttpStatus.OK.toString());
+                                                }, () -> {
+                                                    resp.setRequest(req);
+                                                    responseRepository.save(resp);
+                                                    requestStatuses.put(requestId, HttpStatus.OK.toString());
+                                                });
                                     }
                                 } catch (TransactionSystemException e) {
                                     Throwable t = e.getCause();
