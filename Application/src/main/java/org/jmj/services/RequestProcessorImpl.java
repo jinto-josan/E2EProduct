@@ -1,5 +1,7 @@
 package org.jmj.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.jmj.constants.Constants;
@@ -19,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
+import static org.jmj.entity.ResponseType.COSMOS;
 import static org.jmj.entity.ResponseType.REST;
 
 @Slf4j
@@ -30,7 +33,10 @@ public class RequestProcessorImpl implements RequestProcessor {
     private final RequestRepository requestRepository;
     private final AzPublisherService azPublisherService;
     private final PathCache pathCache;
+    private final ObjectMapper objectMapper;
+    private final AzCosmosService azCosmosService;
     //Todo: Genearte Rest response based for subsystem based on open api json
+    //Todo: Parse request body to populate context - Low priority
 
     @Override
     public ResponseEntity<String> processRequest(ServerHttpRequest req, HttpHeaders headers, SubSystem subSystem) {
@@ -47,28 +53,53 @@ public class RequestProcessorImpl implements RequestProcessor {
         );
         if (responses.isEmpty())
             return ResponseEntity.status(actRqstPthAndCtxt.getStatus(req.getMethod())).body(Constants.NO_CONFIG_MSG);
-
+        //Todo: Response based on response order
         processAsyncResponses(responses, actRqstPthAndCtxt.context());
-
+        //Todo: Rest response to be sent first
+        //Todo: DS for cosmos, now body is query and fqdn is container name
         return responses.stream()
-                .filter(response -> response.getType() == REST)
+                .filter(response -> response.getType() == REST || response.getType() == COSMOS)
                 .findFirst()
                 .map(response -> {
+                    if(response.getType()==COSMOS){
+                        log.info("Response is Cosmos");
+                        try {
+                            azCosmosService.fetchDocumentsByQuery(response.getBody(),response.getFqdn())
+                                    .subscribe(l->log.info("Cosmos response: {}",l));
+                            return ResponseEntity.status(response.getStatusCode()).body(objectMapper.writeValueAsString(Map.of("status","Success")));
+                        } catch (JsonProcessingException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
                     log.info("Response found: {}", response.getBody());
-                    return resolveResponseBody(response, actRqstPthAndCtxt.context());
+                    return ResponseEntity.status(response.getStatusCode()).body(resolve(response.getBody(), actRqstPthAndCtxt.context()));
+
                 })
                 //If no rest response it means some async request was present
+                //Its passed if some event has to be passed for other status code
                 .orElseGet(() -> ResponseEntity.accepted().body(Constants.ONLY_ASYNC_RESPONSES_MSG));
 
     }
 
-    private ResponseEntity<String> resolveResponseBody(Response response, Map<String, String> context){
-        String responseBody = response.getBody();
+
+
+    private String resolve(String subject, Map<String, String> context){
         for (Map.Entry<String, String> entry : context.entrySet()) {
-            responseBody = responseBody.replace("{" + entry.getKey() + "}", entry.getValue());
+            subject = subject.replace(Constants.DYNAMIC_VAL_PREFIX + entry.getKey() + Constants.DYNAMIC_VAL_SUFFIX, entry.getValue());
         }
-        return ResponseEntity.status(response.getStatusCode()).body(responseBody);
+        return subject;
     }
+    private Map<String,String> resolve(Map <String,String> subject, Map<String, String> context){
+        try {
+            if(subject==null)
+                return null;
+            var resolved=resolve(objectMapper.writeValueAsString(subject),context);
+            return objectMapper.readValue(resolved,Map.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Override
     public String updateStatusForRequest(RequestId requestId,HttpStatus status){
         pathCache.updateStatus(requestId.getSubSystemId(),requestId.getPath(),requestId.getMethod(),status);
@@ -82,16 +113,21 @@ public class RequestProcessorImpl implements RequestProcessor {
         responses.forEach(response -> {
             switch(response.getType()){
                 case REST:
-                    log.info("Skipping rest response");
+                    break;
+                case COSMOS:
                     break;
                 case EVENT_HUB:
                     log.info("Sending to Event Hub: {}", response.getFqdn());
-                    azPublisherService.publish(response.getType(),response.getFqdn() ,resolveResponseBody(response, context))
+                    azPublisherService.publish(response.getType(),response.getFqdn() ,
+                                    resolve(response.getBody(), context),
+                                    resolve(response.getCustomProperties(),context))
                             .subscribe(log::info);
                     break;
                 case SERVICEBUS:
                     log.info("Sending to Service Bus: {}", response.getFqdn());
-                    azPublisherService.publish(response.getType(),response.getFqdn(), resolveResponseBody(response, context))
+                    azPublisherService.publish(response.getType(),response.getFqdn(),
+                                    resolve(response.getBody(), context),
+                                    resolve(response.getCustomProperties(),context))
                             .subscribe(log::info);
                     break;
                 case KAFKA:

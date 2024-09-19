@@ -20,6 +20,7 @@ public interface ResponseRepository extends JpaRepository<Response, Long> {
     List<Response> findByRequest_Id(RequestId requestId);
     Optional<Response> findByRequest_IdAndType(RequestId requestId, ResponseType type);
     Optional<Response> findByRequest_IdAndFqdn(RequestId requestId, String fqdn);
+    Optional<Response> findByRequest_idAndFqdnAndBody(RequestId requestId, String fqdn, String body);
 
     List<Response> findByRequest_IdAndStatusCodeOrderByType(RequestId requestId, HttpStatus statusCode);
 }

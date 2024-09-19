@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.jmj.annotations.FqdnValidator;
 import org.jmj.entity.deserializers.HttpStatusCodeDeserializer;
 
+import java.util.Map;
+
 @Entity
 @Data
 @RequiredArgsConstructor
@@ -42,6 +44,10 @@ public class Response {
 
     @lombok.NonNull
     private Integer responseOrder;
+
+    //Its kept as map to enforce that it should be key value pair and is sent to header
+    @ElementCollection(fetch = FetchType.EAGER)
+    private Map<String,String> customProperties;
 
     @ManyToOne
     @JoinColumns({

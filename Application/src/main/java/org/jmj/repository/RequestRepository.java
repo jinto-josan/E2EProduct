@@ -14,7 +14,7 @@ import java.util.List;
 public interface RequestRepository extends JpaRepository<Request, RequestId> {
 //    @Query("SELECT r FROM Request r WHERE r.subSystem.name = :subSystemName")
     List<Request> findBySubSystemName(String subSystemName);
-    //Name is used because not required to load requests in subsystem eagerly
+    //Name is used because not required to load requests.json in subsystem eagerly
     @Query("SELECT DISTINCT r.id.path FROM Request r WHERE r.subSystem.name = :subSystemName")
     List<String> findDistinctPathsBySubSystemName(@Param("subSystemName") String subSystemName);
 

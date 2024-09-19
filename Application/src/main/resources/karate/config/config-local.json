@@ -1,8 +1,10 @@
 {
+  "apimBaseUri": "https://api.stg.platform.csg.daimlertruck.com/",
   "smApi":  "http://localhost:8096/",
   "crmContractUri": "v1/contract/crm",
 
-  "e2eApi": "http://localhost:8080/",
-  "createResponse": "create-response/e2einternal",
-  "customSendContractUrl": "http://localhost:8080/e2einternal/send/uptimecontract"
+  "e2eBaseUri": "http://localhost:8080/",
+  "e2eCreateResponse": "http://localhost:8080/create-response/",
+  "e2eCreateRequest": "http://localhost:8080/create-request/",
+  "e2eApi": "http://localhost:8080/e2einternal/"
 }

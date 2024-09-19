@@ -4,5 +4,6 @@ public enum ResponseType {
     REST,
     EVENT_HUB,
     KAFKA,
-    SERVICEBUS
+    SERVICEBUS,
+    COSMOS
 }
