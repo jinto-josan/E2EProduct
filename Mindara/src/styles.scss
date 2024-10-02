@@ -1,55 +1,35 @@
-
-// Custom Theming for Angular Material
-// For more information: https://material.angular.io/guide/theming
 @use '@angular/material' as mat;
-// Plus imports for other components in your app.
+@use './custom-theme.scss' as theme;
+
 
 // Include the common styles for Angular Material. We include this here so that you only
 // have to load a single css file for Angular Material in your app.
 // Be sure that you only ever include this mixin once!
 @include mat.core();
 
-// Define the theme object.
-$Mindara-theme: mat.define-theme((
-  color: (
-    theme-type: light,
-    primary: mat.$azure-palette,
-    tertiary: mat.$blue-palette,
-  ),
-  density: (
-    scale: 0,
-  )
-));
-
 // Include theme styles for core and each component used in your app.
 // Alternatively, you can import and @include the theme mixins for each component
 // that you are using.
 :root {
-  @include mat.all-component-themes($Mindara-theme);
+  @include mat.all-component-themes(theme.$light-theme);
+  //To generate system level colors from theme
+  @include mat.system-level-colors(theme.$light-theme);
+  @include mat.system-level-typography(theme.$light-theme);  
+  // // Apply the light theme only when the user prefers light themes.
+  // @media (prefers-color-scheme: dark) {
+  //   @include mat.all-component-themes(theme.$dark-theme);
+  //   @include mat.system-level-colors(theme.$dark-theme);
+  //   @include mat.system-level-typography(theme.$dark-theme);
+  // }
+  
+
 }
 
 // Comment out the line below if you want to use the pre-defined typography utility classes.
 // For more information: https://material.angular.io/guide/typography#using-typography-styles-in-your-application.
 // @include mat.typography-hierarchy($Mindara-theme);
 
-// Comment out the line below if you want to use the deprecated `color` inputs.
-// @include mat.color-variants-backwards-compatibility($Mindara-theme);
-/* You can add global styles to this file, and also import other style files */
-@use './assets/styles/colors.scss' ;
-@use './assets/styles/button-effects.scss' ;
-@use './assets/styles/font-sizes.scss' ;
-
-//Global styles
-body {
-    font-family: Arial, sans-serif;
-    line-height: 1.6;
-    color: var(--text-color);
-    height: 100vh;
-    margin-top: 0 ;
-    background-color: var(--surface-color-2);
-}
-
-
 /* Rest of your SCSS code goes here */
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
