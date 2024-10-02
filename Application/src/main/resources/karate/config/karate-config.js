@@ -9,6 +9,19 @@ function fn() {
     config=karate.merge(config, read(config.base_path+"config/config-"+karate.properties["e2e.env"]+".json"));
   }
 
+  //Setting up e2e uri's
+  config.responseDir=config.base_path + 'e2e-configs/responses/'
+  config.requestFile=config.base_path + 'e2e-configs/requests.json'
+  config.setupDir=config.base_path + 'setup/'
+  config.utilityDir=config.base_path + 'utilities/'
+  config.cosmosDir=config.base_path + 'e2e-configs/cosmosQueries/'
+
+
+
+// Setup all request
+  karate.callSingle(config.setupDir+'RequestSetup.feature', config)
+
+
   karate.log(config)
   return config;
 }

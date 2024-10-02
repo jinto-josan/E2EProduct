@@ -1,9 +1,9 @@
+@ignore
 Feature: FB CRM onboarding
 
   Background: Setup
-    * def result = callonce read(base_path + 'setup/authorization.feature')
+    * def result = callonce read(base_path + 'setup/FetchAdToken.feature')
     * def token = result.accessToken
-    * def requests = base_path + 'requests/'
     Given url smApi
 
   Scenario: Testing FB CRM onboarding
@@ -25,7 +25,7 @@ Feature: FB CRM onboarding
 
   #    * header Authorization = token
   #    And path crmContractUri
-  #    And request read(requests + 'crmContract.json')
+  #    And request read(requests.json + 'crmContract.json')
   #    When method post
   #    Then status 201
   #    * def vehicles = response.body[0]

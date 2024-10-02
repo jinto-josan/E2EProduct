@@ -39,3 +39,8 @@ Thumbs.db
 *.orig
 *.rej
 Application/src/main/resources/karate/config/config.json
+
+**/node_modules/
+**/.nx/
+**/.angular/
+
