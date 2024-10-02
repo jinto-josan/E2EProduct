@@ -1,0 +1,17 @@
+/* You can add global styles to this file, and also import other style files */
+@use './assets/styles/colors.scss' ;
+@use './assets/styles/button-effects.scss' ;
+@use './assets/styles/font-sizes.scss' ;
+
+//Global styles
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+    height: 100vh;
+    margin-top: 0 ;
+    background-color: var(--surface-color-2);
+}
+
+
+/* Rest of your SCSS code goes here */
