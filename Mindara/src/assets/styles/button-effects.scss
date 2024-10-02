@@ -62,8 +62,6 @@ $hover: hsl(from $color calc(h + 45) s l);
   .#{$button} {
     color: $color;
     transition: 0.25s; 
-    background: none;
-    border: 2px solid;
     &:hover, &:focus { 
       border-color: $hover;
     }
