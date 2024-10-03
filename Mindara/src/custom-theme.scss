@@ -125,6 +125,7 @@ $_palettes: (
     100: #ffffff,
   ),
 );
+// $standard-typography: mat.m2-define-typography-config();
 
 $_rest: (
   secondary: map.get($_palettes, secondary),
@@ -144,6 +145,8 @@ $light-theme: mat.define-theme((
   ),
   typography: (
     use-system-variables: false,
+    brand-family: 'Daimler CS Regular',
+    plain-family: 'Roboto'
   ),
   density: (
     scale: 0,
@@ -158,6 +161,7 @@ $dark-theme: mat.define-theme((
   ),
   typography: (
     use-system-variables: true,
+
   ),
   density: (
     scale: 0,
