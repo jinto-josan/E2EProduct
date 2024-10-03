@@ -13,8 +13,8 @@
 :root {
   @include mat.all-component-themes(theme.$light-theme);
   //To generate system level colors from theme
-  @include mat.system-level-colors(theme.$light-theme);
-  @include mat.system-level-typography(theme.$light-theme);  
+  // @include mat.system-level-colors(theme.$light-theme);
+  // @include mat.system-level-typography(theme.$light-theme);  
   // // Apply the light theme only when the user prefers light themes.
   // @media (prefers-color-scheme: dark) {
   //   @include mat.all-component-themes(theme.$dark-theme);

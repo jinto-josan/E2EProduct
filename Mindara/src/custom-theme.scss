@@ -140,10 +140,10 @@ $light-theme: mat.define-theme((
     theme-type: light,
     primary: $_primary,
     tertiary: $_tertiary,
-    use-system-variables: true,    
+    use-system-variables: false,    
   ),
   typography: (
-    use-system-variables: true,
+    use-system-variables: false,
   ),
   density: (
     scale: 0,
