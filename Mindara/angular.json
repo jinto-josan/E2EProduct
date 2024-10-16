@@ -101,7 +101,7 @@
   },
   "cli": {
     "cache": {
-      "enabled": false
+      "enabled": true
     }
   }
 }

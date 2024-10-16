@@ -5,7 +5,7 @@ import { TestingComponent } from './pages/testing/testing.component';
 
 export const appRoutes: Route[] = [
     {
-        path: 'configure',
+        path: 'configure/:subsystem',
         component: ConfigureComponent
     },
     {

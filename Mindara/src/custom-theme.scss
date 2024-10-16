@@ -125,7 +125,6 @@ $_palettes: (
     100: #ffffff,
   ),
 );
-// $standard-typography: mat.m2-define-typography-config();
 
 $_rest: (
   secondary: map.get($_palettes, secondary),
@@ -161,7 +160,6 @@ $dark-theme: mat.define-theme((
   ),
   typography: (
     use-system-variables: true,
-
   ),
   density: (
     scale: 0,

@@ -10,6 +10,7 @@ import org.jmj.entity.*;
 import org.jmj.repository.RequestRepository;
 import org.jmj.repository.ResponseRepository;
 import org.jmj.repository.SubsystemRepository;
+import org.jmj.repository.projections.SubsystemProjection;
 import org.jmj.services.RequestProcessor;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.TransactionSystemException;
@@ -37,6 +38,10 @@ public class ConfigurationController {
         subsystemRepository.save(subSystem);
         subSystemRegisterer.registerRestSubSystem(subSystem);
         return "Created SubSystem";
+    }
+    @GetMapping("/subsystems")
+    public List<SubsystemProjection> getSubSystems() {
+        return subsystemRepository.findAllBy();
     }
 
     @PostMapping("/create-request/{subSystemId}")

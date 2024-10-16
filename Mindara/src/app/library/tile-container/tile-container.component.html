@@ -1,1 +1,2 @@
-<button mat-fab extended *ngFor="let tile of tileConfig" [routerLink]="tile.link">{{tile.label}}</button>
+<button class="mat-headline-medium" mat-fab extended 
+*ngFor="let tile of tileConfig" (click)="handleTileClick(tile)">{{tile.label}}</button>
