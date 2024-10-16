@@ -13,6 +13,7 @@ import org.jmj.repository.SubsystemRepository;
 import org.jmj.repository.projections.SubsystemProjection;
 import org.jmj.services.RequestProcessor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.transaction.TransactionSystemException;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
@@ -33,18 +34,18 @@ public class ConfigurationController {
     private final RequestProcessor requestProcessor;
 
 
-    @PostMapping("/create-subsystem")
+    @PostMapping(value="/create-subsystem", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public String createSubSystem(@RequestBody SubSystem subSystem) {
         subsystemRepository.save(subSystem);
         subSystemRegisterer.registerRestSubSystem(subSystem);
         return "Created SubSystem";
     }
-    @GetMapping("/subsystems")
+    @GetMapping(value="/subsystems",consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<SubsystemProjection> getSubSystems() {
         return subsystemRepository.findAllBy();
     }
 
-    @PostMapping("/create-request/{subSystemId}")
+    @PostMapping(value="/create-request/{subSystemId}",consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public String createRequest(@PathVariable("subSystemId") String subsystem,
                                 @RequestBody List<Request> request) {
         requestProcessor.modifyRequest(subsystem,request);
@@ -60,13 +61,13 @@ public class ConfigurationController {
         return "Updated Status";
     }
 
-    @PostMapping("/create-response/{subSystemId}")
+    @PostMapping(value="/create-response/{subSystemId}",consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<RequestId,String> createResponse(@PathVariable("subSystemId") String subSystemID,
                                                                @RequestBody Request request) {
         return validateAndUpdateResponse(subSystemID,request);
     }
 
-    @GetMapping("/get-response/{subSystemId}")
+    @GetMapping(value="/get-response/{subSystemId}",consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<Object,List<String>> getResponsesForRequestId(@PathVariable("subSystemId") String subSystemID,
                                                              @RequestParam(value = "status",required = false) Integer status,
                                                              @RequestParam("requestMethod")String method,
