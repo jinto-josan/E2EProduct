@@ -1,0 +1,22 @@
+<mat-dialog-content class="mat-typography">
+    <form [formGroup]="requestForm">
+        <mat-form-field>
+            <mat-label>Request Path</mat-label>
+            <mat-hint>{{'Example:test/{dynamic}/test1'}}</mat-hint>
+            <input matInput formControlName="path" required>
+        </mat-form-field>
+
+        <mat-form-field>
+            <mat-label>Request Method</mat-label>
+            <mat-select formControlName="method" required>
+                <mat-option *ngFor="let method of methods" [value]="method">
+                    {{method}}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+        <div mat-dialog-actions>
+            <button mat-button (click)="onCancel()">Cancel</button>
+            <button mat-button [disabled]="!requestForm.valid" (click)="onSubmit()">Submit</button>
+        </div>
+    </form>
+</mat-dialog-content>

@@ -11,7 +11,6 @@ import { MatListModule } from '@angular/material/list';
 import { MatSelectModule } from '@angular/material/select';
 import { SubSystemFormComponent } from '../../forms/sub-system-form/sub-system-form.component';
 import { Router } from '@angular/router';
-import { ConfigurationControllerService, SubsystemProjection } from '../../api-client';
 
 @Component({
   selector: 'app-pages-dashboard',

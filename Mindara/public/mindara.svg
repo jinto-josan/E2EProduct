@@ -1,0 +1,57 @@
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="400"
+    height="400"
+    viewBox="0 0 400 400"
+>
+    <defs>
+        <linearGradient id="gradBackground" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#6a1b9a; stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#ffb74d; stop-opacity:1" />
+        </linearGradient>
+        <radialGradient id="gradCircle" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+            <stop offset="0%" style="stop-color:#ffffff; stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#f0f0f0; stop-opacity:1" />
+        </radialGradient>
+    </defs>
+
+    <circle cx="200" cy="200" r="100" fill="url(#gradCircle)" />
+    
+    <path
+        d="M 200 160 Q 180 130 160 150 Q 140 170 160 190 Q 180 210 200 190 Q 220 210 240 190 Q 260 170 240 150 Q 220 130 200 160"
+        fill="#007A93"
+    />
+    
+    <text
+        x="200"
+        y="280"
+        font-family="Arial"
+        font-size="32"
+        fill="#007A93"
+        text-anchor="middle"
+        alignment-baseline="middle"
+    >
+        Mindara
+    </text>
+
+    <text
+        x="200"
+        y="320"
+        font-family="Arial"
+        font-size="16"
+        fill="#4A148C"
+        text-anchor="middle"
+        alignment-baseline="middle"
+    >
+        Realm of Insight
+    </text>
+
+    <circle cx="170" cy="140" r="8" fill="#4A148C" />
+    <circle cx="230" cy="140" r="8" fill="#4A148C" />
+    <path
+        d="M 170 150 Q 200 180 230 150"
+        stroke="#4A148C"
+        stroke-width="4"
+        fill="none"
+    />
+</svg>

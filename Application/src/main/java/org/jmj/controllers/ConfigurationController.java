@@ -12,6 +12,9 @@ import org.jmj.repository.ResponseRepository;
 import org.jmj.repository.SubsystemRepository;
 import org.jmj.repository.projections.SubsystemProjection;
 import org.jmj.services.RequestProcessor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.transaction.TransactionSystemException;
@@ -26,6 +29,7 @@ import java.util.stream.Collectors;
 @RestController("/configuration")
 @Slf4j
 @Data
+@CrossOrigin(origins = "http://localhost:4200")
 public class ConfigurationController {
     private final SubsystemRepository subsystemRepository;
     private final RequestRepository requestRepository;
@@ -33,6 +37,18 @@ public class ConfigurationController {
     private final SubSystemRegisterer subSystemRegisterer;
     private final RequestProcessor requestProcessor;
 
+    @GetMapping(value="/subsystems", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<SubsystemProjection> getSubSystems() {
+        return subsystemRepository.findAllBy();
+    }
+    @GetMapping(value="/requests/{subSystemId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Page<RequestId> getRequests(@PathVariable("subSystemId") String subSystemId,
+                                       @RequestParam(value = "page",required = false) Integer page,
+                                       @RequestParam(value = "size",required = false) Integer size,
+                                       @RequestParam(value = "sort",required = false) String sort) {
+        Pageable pageable = PageRequest.of(page!=null?page:0,size!=null?size:5);
+        return requestRepository.findBySubSystemName(subSystemId,pageable);
+    }
 
     @PostMapping(value="/create-subsystem", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public String createSubSystem(@RequestBody SubSystem subSystem) {
@@ -40,10 +56,7 @@ public class ConfigurationController {
         subSystemRegisterer.registerRestSubSystem(subSystem);
         return "Created SubSystem";
     }
-    @GetMapping(value="/subsystems",consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<SubsystemProjection> getSubSystems() {
-        return subsystemRepository.findAllBy();
-    }
+
 
     @PostMapping(value="/create-request/{subSystemId}",consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public String createRequest(@PathVariable("subSystemId") String subsystem,

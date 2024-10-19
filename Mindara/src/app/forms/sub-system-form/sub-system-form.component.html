@@ -1,0 +1,33 @@
+<mat-dialog-content class="mat-typography">
+    <form [formGroup]="subsystemForm">        
+        <mat-form-field>
+            <mat-label>Choose or add a subsystem</mat-label>
+            <input matInput formControlName="subsystem" [matAutocomplete]="auto">
+            <mat-autocomplete #auto="matAutocomplete">
+                @for (subsystem of subsystemList(); track $index) {
+                    <mat-option [value]="subsystem.name">
+                        {{subsystem.name}}
+                    </mat-option>
+                }
+                @empty {
+                    <div>No Subsystems found</div>
+                }
+            </mat-autocomplete>
+        </mat-form-field>
+        <!--If new subsystem is selected, show optional description field in next line-->
+        @if(isNewSubsystem()) {
+            <mat-form-field>
+            <mat-label>Optional Description</mat-label>
+            <input matInput formControlName="description">
+            </mat-form-field>
+        }
+        @if(subsystemForm.get('subsystem').hasError('required')) {
+            <mat-error>Subsystem is required</mat-error>
+        }
+    </form>    
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Cancel</button>
+  <!-- <button mat-button  [mat-dialog-close]="subSystemSelected()" type='submit' (click)="handleClick()"  cdkFocusInitial>Submit</button> -->
+  <button mat-button  type='submit' (click)="handleClick()"  cdkFocusInitial>Submit</button>
+</mat-dialog-actions>
